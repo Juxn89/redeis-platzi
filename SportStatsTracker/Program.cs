@@ -25,6 +25,7 @@ internal class Program
 			string? getValue = await db.StringGetAsync("test:key");
 			Console.WriteLine($"Get value: {getValue}");
 
+			#region Lists on Redis
 			// 0. Clean the current key
 			await db.KeyDeleteAsync("test:list");
 
@@ -80,6 +81,53 @@ internal class Program
 			// 9. Add element to the list in JSON format
 			var jsonElement = JsonSerializer.Serialize(new { Name = "Newman", Age = 30, Occupation = "Developer" });
 			await db.ListRightPushAsync(listKey, jsonElement);
+			#endregion
+
+			#region Hash
+			Console.WriteLine("\n\t***Hash operations ***\n");
+
+			// Add elemento to hash
+			await db.HashSetAsync("student:48", new HashEntry[] {
+				new HashEntry("name", "Newman"),
+				new HashEntry("age", 30),
+				new HashEntry("occupation", "Developer")
+			});
+
+			// Retrieve name from hash
+			var getNameStudentHash = await db.HashGetAsync("student:48", "name");
+			Console.WriteLine($"Student #48, name: {getNameStudentHash}");
+
+			// Retrieve age from hash
+			var getAgeStudentHash = await db.HashGetAsync("student:48", "age");
+			Console.WriteLine($"Student #48, age: {getAgeStudentHash}");
+
+			// Retrieve occupation from hash
+			var getOccupationStudentHash = await db.HashGetAsync("student:48", "occupation");
+			Console.WriteLine($"Student #48, occupation: {getOccupationStudentHash}");
+
+			// Retrieve all fields from hash
+			var getStudentHash = await db.HashGetAllAsync("student:48");
+			foreach (var entry in getStudentHash)
+			{
+				Console.WriteLine($"Student #48, {entry.Name}: {entry.Value}");
+			}
+
+			// Add a new element to hash
+			await db.HashSetAsync("student:2048", new HashEntry[] {
+				new HashEntry("name", "Ada Lovelace"),
+				new HashEntry("age", 36),
+				new HashEntry("occupation", "Mathematician"),
+				new HashEntry("nationality", "British")
+			});
+
+			// Retrieve all fields from hash
+			var keysInStudent2048 = await db.HashKeysAsync("student:2048");
+			foreach (var key in keysInStudent2048)
+			{
+				var value = await db.HashGetAsync("student:2048", key);
+				Console.WriteLine($"Student #2048, {key}: {value}");
+			}
+			#endregion
 		}
 	}
 }
