@@ -128,6 +128,84 @@ internal class Program
 				Console.WriteLine($"Student #2048, {key}: {value}");
 			}
 			#endregion
+
+			#region Essential redis commands
+			Console.WriteLine("\n\t***Essential redis commands ***\n");
+
+			// Set a new key-value
+			var tempValue = await db.SetAddAsync("temp-key", "Temporal value");
+			Console.WriteLine($"Set a new key-value: temp-key = {tempValue}");
+
+			// delete
+			await db.SetRemoveAsync("temp-key", "Temporal value");
+			Console.WriteLine($"Deleted key: temp-key");
+
+			// delete again the same key
+			var tempValueAgain = await db.SetRemoveAsync("temp-key", "Temporal value");
+			Console.WriteLine($"Deleted key (again): temp-key, value= #{tempValueAgain}");
+
+			// Exist a key
+			await db.SetAddAsync("temp-key", "Temporal value");
+			var existsTemp = await db.KeyExistsAsync("temp-key");
+			Console.WriteLine($"Key exists (temp-key): {existsTemp}");
+
+			// Not exist a key
+			var notExistsTemp = await db.KeyExistsAsync("temp-key-not-exist");
+			Console.WriteLine($"Key exists (temp-key-not-exist): {notExistsTemp}");
+
+			// Set expiration to a key in 10 seconds
+			await db.KeyExpireAsync("temp-key", TimeSpan.FromSeconds(10));
+			Console.WriteLine($"Set expiration to key (temp-key): 10 seconds");
+
+			// Get Time to live of a key
+			var ttlTemp = await db.KeyTimeToLiveAsync("temp-key");
+			Console.WriteLine($"Time to live of key (temp-key): {ttlTemp?.TotalSeconds} seconds");
+
+			// Await 11 seconds
+			Console.WriteLine("Awaiting 11 seconds...");
+			await Task.Delay(11000);
+
+			// Check if the key exists after expiration
+			var existsTempAfterExpire = await db.KeyExistsAsync("temp-key");
+			Console.WriteLine($"Key exists after expiration (temp-key): {existsTempAfterExpire}");
+
+			// Get-Set - Atomic operation
+			var setTempMultKey = await db.StringSetAsync("temp-mult-key", "New value");
+			Console.WriteLine($"Get-Set value (temp-mult-key): {setTempMultKey}");
+
+			var getSetTempMultKey = await db.StringGetSetAsync("temp-mult-key", "Already exists");
+			Console.WriteLine($"Get-Set value (temp-mult-key): {getSetTempMultKey}");
+
+			var getSetTempMultKeyAgain = await db.StringGetSetAsync("temp-mult-key", "Already exists, again");
+			Console.WriteLine($"Get-Set value (temp-mult-key): {getSetTempMultKeyAgain}");
+
+			// Multiple set
+			var keyValuesPair = new[] {
+				new KeyValuePair<RedisKey, RedisValue>("name", "Justice League"),
+				new KeyValuePair<RedisKey, RedisValue>("members", "Superman, Batman, Wonder Woman")
+			};
+			var setJusticeLeagueKey = await db.StringSetAsync(keyValuesPair);
+
+			// Multiple get
+			var keys = new RedisKey[] { "name", "members" };
+			var getJusticeLeagueKeyValues = await db.StringGetAsync(keys);
+			// Display the retrieved values
+			for (int i = 0; i < keys.Length; i++)
+			{
+				Console.WriteLine($"Get-Set value (justice-league): {keys[i]} = {getJusticeLeagueKeyValues[i]}");
+			}
+
+			// Increment and decrement values
+			await db.StringIncrementAsync("counter:increment", 1);
+			await db.StringIncrementAsync("counter:increment");
+			await db.StringIncrementAsync("counter:increment");
+			await db.StringIncrementAsync("counter:increment", 2);
+			var incrementName = await db.StringIncrementAsync("counter", 1);
+			Console.WriteLine($"Incremented value (name): {incrementName}");
+
+			var decrementMembers = await db.StringDecrementAsync("counter", 1);
+			Console.WriteLine($"Decremented value (members): {decrementMembers}");
+			#endregion
 		}
 	}
 }
