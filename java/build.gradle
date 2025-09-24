@@ -1,0 +1,16 @@
+plugins {
+	id 'java'
+	id 'application'
+}
+
+repositories {
+	mavenCentral()
+}
+
+application {
+	implementation = "App"
+}
+
+dependencies {
+	implementation 'redis.clients:jedis:6.2.0'
+}
