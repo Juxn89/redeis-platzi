@@ -1,3 +1,5 @@
+import redis.clients.jedis.Jedis;
+
 public class App {
 	public static void main(String[] args) throws Exception {
 		Jedis jedis = new Jedis("localhost", 6379);
